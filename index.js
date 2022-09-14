@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 const express = require('express')
 const res = require('express/lib/response')
 const app = express()
@@ -5,6 +7,6 @@ const app = express()
 app.get('/', (req, res) => {
     res.send('Hello World')
 })
-app.listen(4000, () => {
-    console.log('Backend en ejecucion')
+app.listen(process.env.PORT,() => {
+    console.log("Backend en ejecucion en el puerto", process.env.PORT)
 })
