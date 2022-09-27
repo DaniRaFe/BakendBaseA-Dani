@@ -1,13 +1,15 @@
-const rootMessage = (req, res) => {res.send("Messages")}
+const { request, response } = require("express")
 
-const hiMessage = (req, res) => {res.send("Hola Mundo")}
+const rootMessage = (req=request, res=response) => {res.status(404).json({msg:"Messages"})}
 
-const byeMessage = (req, res) => {res.send("Adios Mundo")}
+const hiMessage = (req=request, res=response) => {res.status(405).json({msg:"Hola Mundo"})}
 
-const postMessage = (req, res) => {res.send("Mensaje POST")}
+const byeMessage = (req=request, res=response) => {res.status(418).json({msg:"Adios Mundo"})}
 
-const putMessage = (req, res) => {res.send("Mensaje PUT")}
+const postMessage = (req=request, res=response) => {res.status(400).json({msg:"Mensaje POST"})}
 
-const deleteMessage = (req, res) => {res.send("Mensaje DELETE")}
+const putMessage = (req=request, res=response) => {res.status(407).json({msg:"Mensaje PUT"})}
+
+const deleteMessage = (req=request, res=response) => {res.status(411).json({msg:"Mensaje DELETE"})}
 
 module.exports  = {rootMessage, hiMessage, byeMessage, postMessage, putMessage, deleteMessage}
