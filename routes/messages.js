@@ -13,7 +13,7 @@ const {
 
 //router.get("", () => {})
 router.get('/', rootMessage) //End Point
-router.get('/hi', hiMessage) //End Point
+router.get('/hi/:name', hiMessage) //End Point
 router.get('/bye', byeMessage) //End Point
 
 router.post('/', postMessage)
