@@ -84,4 +84,74 @@ const deleteUserByID = async (req = request, res = response) =>{
     }
 }
 
-module.exports = {getUsers, getUserByID, deleteUserByID}
+const addUser = async (req = request, res = response) =>{
+    const {
+        Nombre,
+        Apellidos,
+        Edad,
+        Genero,
+        Usuario,
+        Contraseña,
+        Fecha_Nacimiento,
+        Activo
+    } = req.body
+    //estructura basica de cualquier endpoint al conectar en su BD
+
+    if(
+        !Nombre ||
+        !Apellidos ||
+        !Edad ||
+        !Genero ||
+        !Usuario ||
+        !Contraseña ||
+        !Fecha_Nacimiento ||
+        !Activo
+        ) {
+            res.status(400).json({msg: "Falta informacion del usuario"})
+            return
+    }
+    
+    let conn;
+    //control de exepciones
+    try {
+        conn = await pool.getConnection()
+        //esta es la consulta mas basica, se pueden hacer mas complejas
+        //TAREA como hacer que el usuario no se duplique
+        const {affectedRows} = await conn.query(`INSERT INTO Usuarios (
+            Nombre,
+             Apellidos,
+             Edad,
+             Genero,
+             Usuario,
+             Contraseña,
+             Fecha_Nacimiento,
+             Activo
+        ) VALUES (
+            '${Nombre}',
+            '${Apellidos}',
+            ${Edad},
+            '${Genero}',
+            '${Usuario}',
+            '${Contraseña}',
+            '${Fecha_Nacimiento}',
+            '${Activo}'
+        )
+        `, (error) => {throw new Error(error) })
+        //siempre validar que no se obtuvieron resultados
+       if (affectedRows ===0) {
+            res.status(404).json({msg:`no se pudo agregar el registro del usuario ${Usuario}`})
+            return
+        }
+        res.json({msg: `El usuario ${Usuario} se agrego correctamente.`})
+        //lo del cath y final siempre sera lo mismo
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({error})
+    }finally{
+        if(conn){
+            conn.end()
+        }
+    }
+}
+
+module.exports = {getUsers, getUserByID, deleteUserByID, addUser}
