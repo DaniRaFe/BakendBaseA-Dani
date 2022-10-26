@@ -92,7 +92,7 @@ const addUser = async (req = request, res = response) =>{
         Genero,
         Usuario,
         Contraseña,
-        Fecha_Nacimiento,
+        Fecha_Nacimiento = '1900-01-01',
         Activo
     } = req.body
     //estructura basica de cualquier endpoint al conectar en su BD
@@ -101,10 +101,8 @@ const addUser = async (req = request, res = response) =>{
         !Nombre ||
         !Apellidos ||
         !Edad ||
-        !Genero ||
         !Usuario ||
         !Contraseña ||
-        !Fecha_Nacimiento ||
         !Activo
         ) {
             res.status(400).json({msg: "Falta informacion del usuario"})
@@ -117,6 +115,10 @@ const addUser = async (req = request, res = response) =>{
         conn = await pool.getConnection()
         //esta es la consulta mas basica, se pueden hacer mas complejas
         //TAREA como hacer que el usuario no se duplique
+        const user = await conn.query(`SELECT Usuario FROM Usuarios WHERE Usuario = '${Usuario}'`)
+        if (user) {
+            res.status(403).json({msg: `El usuario ${Usuario} ya se encuentra registrada`})
+        }
         const {affectedRows} = await conn.query(`INSERT INTO Usuarios (
             Nombre,
              Apellidos,
@@ -130,7 +132,7 @@ const addUser = async (req = request, res = response) =>{
             '${Nombre}',
             '${Apellidos}',
             ${Edad},
-            '${Genero}',
+            '${Genero || ""}',
             '${Usuario}',
             '${Contraseña}',
             '${Fecha_Nacimiento}',
