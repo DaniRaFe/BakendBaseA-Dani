@@ -1,6 +1,6 @@
 const { request, response } = require("express");
 const pool = require("../db/connection")
-
+const bcryptjs= require("bcryptjs")
 const getUsers = async (req = request, res = response) =>{
     //estructura basica de cualquier endpoint al conectar en su BD
     
@@ -115,10 +115,13 @@ const addUser = async (req = request, res = response) =>{
         conn = await pool.getConnection()
         //esta es la consulta mas basica, se pueden hacer mas complejas
         //TAREA como hacer que el usuario no se duplique
-        const user = await conn.query(`SELECT Usuario FROM Usuarios WHERE Usuario = '${Usuario}'`)
+        const [user] = await conn.query(`SELECT Usuario FROM Usuarios WHERE Usuario = '${Usuario}'`)
         if (user) {
             res.status(403).json({msg: `El usuario ${Usuario} ya se encuentra registrada`})
+            return
         }
+        const salt = bcryptjs.genSaltSync()
+        const ContraseñaCifrada = bcryptjs.hashSync(Contraseña,salt)
         const {affectedRows} = await conn.query(`INSERT INTO Usuarios (
             Nombre,
              Apellidos,
@@ -134,7 +137,7 @@ const addUser = async (req = request, res = response) =>{
             ${Edad},
             '${Genero || ""}',
             '${Usuario}',
-            '${Contraseña}',
+            '${ContraseñaCifrada}',
             '${Fecha_Nacimiento}',
             '${Activo}'
         )
@@ -221,4 +224,54 @@ const updateUserByUsuario = async (req = request, res = response) =>{
     }
 }
 
-module.exports = {getUsers, getUserByID, deleteUserByID, addUser, updateUserByUsuario}
+const signIn = async (req = request, res = response) =>{
+    const {
+        Usuario,
+        Contraseña
+    } = req.body
+    //estructura basica de cualquier endpoint al conectar en su BD
+
+    if(
+        !Usuario ||
+        !Contraseña
+        ) {
+            res.status(400).json({msg: "Falta informacion del usuario"})
+            return
+    }
+    
+    let conn;
+    //control de exepciones
+    try {
+        conn = await pool.getConnection()
+        //esta es la consulta mas basica, se pueden hacer mas complejas
+        //TAREA como hacer que el usuario no se duplique
+        const [user] = await conn.query(`SELECT Usuario, Contraseña, Activo FROM Usuarios WHERE Usuario = '${Usuario}'`)
+        if (!user ||user.Activo === 'N') {
+            let code = !user? 1 : 2;
+            res.status(403).json({msg: `El usuario o la Contraseña son incorrectos.`, errorCode: code})
+            return
+        }
+
+        const accesoValido = bcryptjs.compareSync(Contraseña, user.Contraseña)
+
+        if (!accesoValido) {
+            res.status(403).json({msg: `El usuario o la Contraseña son incorrectos.`, errorCode: 3})
+            return
+        }
+       
+
+        res.json({msg: `El usuario ${Usuario} ha iniciado sesion satisfactoriamente.`})
+        //lo del cath y final siempre sera lo mismo
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({error})
+    }finally{
+        if(conn){
+            conn.end()
+        }
+    }
+}
+
+
+
+module.exports = {getUsers, getUserByID, deleteUserByID, addUser, updateUserByUsuario, signIn}

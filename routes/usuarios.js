@@ -1,6 +1,6 @@
 
 const {Router} = require("express")
-const {getUsers, getUserByID, deleteUserByID, addUser, updateUserByUsuario} = require("../controllers/usuarios")
+const {getUsers, getUserByID, deleteUserByID, addUser, updateUserByUsuario, signIn} = require("../controllers/usuarios")
 const router = Router()
 
 //vamos a definir las rutas del localhost 
@@ -16,8 +16,11 @@ router.delete("/", deleteUserByID)
 
 //POST//
 router.post("/", addUser)
+router.post("/signIn", signIn)
 
 //put//
 router.put("/", updateUserByUsuario)
+
+
 
 module.exports = router
