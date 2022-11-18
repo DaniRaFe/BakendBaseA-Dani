@@ -1,7 +1,7 @@
 const { request, response } = require("express");
 const pool = require("../db/connection")
 const bcryptjs= require("bcryptjs");
-const modeloUsuarios = require("../models/usuarios");
+const {modeloUsuarios, updateUsuario} = require("../models/usuarios");
 const getUsers = async (req = request, res = response) =>{
     //estructura basica de cualquier endpoint al conectar en su BD
     
@@ -167,8 +167,7 @@ const updateUserByUsuario = async (req = request, res = response) =>{
         !Nombre ||
         !Apellidos ||
         !Edad ||
-        !Usuario ||
-        !Contraseña 
+        !Usuario 
         ) {
             res.status(400).json({msg: "Falta informacion del usuario"})
             return
@@ -186,14 +185,14 @@ const updateUserByUsuario = async (req = request, res = response) =>{
             res.status(403).json({msg: `El usuario ${Usuario} no se encuentra registrada`})
             return
         }
-        const {affectedRows} = await conn.query(modeloUsuarios.queryUpdateByUsuarios, [
-            Nombre || user.Nombre,
-            Apellidos || user.Apellidos,
-            Edad || user.Edad,
-            Genero || user.Genero,
+        const {affectedRows} = await conn.query(updateUsuario(
+            Nombre,
+            Apellidos,
+            Edad,
+            Genero,
             Fecha_Nacimiento,
             Usuario
-        ], (error) => {throw new Error(error) })
+        ), (error) => {throw new Error(error) })
         //siempre validar que no se obtuvieron resultados
 
        if (affectedRows ===0) {
